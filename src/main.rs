@@ -4,6 +4,8 @@ fn main() {
 }
 
 mod server {
+    use std::io::Read;
+    use std::net::TcpListener;
     pub struct Server {
         addr: String,
     }
@@ -15,8 +17,27 @@ mod server {
 
         pub fn run(self) {
             println!("Bind to a TCP Port and listen {}", self.addr);
-            println!("Accept the client's connection request");
-            println!("Read the client's message");
+            let listener = TcpListener::bind(self.addr).unwrap();
+
+            loop {
+                println!("Accept the client's connection request");
+                match listener.accept() {
+                    Ok((mut stream, addr)) => {
+                        println!("Client Connected. {}", addr);
+                        let mut buff = [0; 256];
+                        println!("Read the client's message");
+                        match stream.read(&mut buff) {
+                            Ok(_) => {
+                                println!("Message received: {}", String::from_utf8_lossy(&buff));
+                            }
+                            Err(_) => {}
+                        }
+                    }
+                    Err(e) => {
+                        println!("Error encountered {}", e);
+                    }
+                }
+            }
         }
     }
 }
